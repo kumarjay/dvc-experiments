@@ -1,0 +1,57 @@
+stages:
+  data_load:
+    cmd: python src/data_load.py --config=params.yaml
+    deps:
+    - src/data_load.py
+    params:
+    - data_load
+    outs:
+    - data/classes.json
+    - data/wine.csv
+  feature_extraction:
+    cmd: python src/featurization.py --config=params.yaml
+    deps:
+    - data/wine.csv
+    - src/featurization.py
+    params:
+    - data_load
+    - featurize
+    outs:
+    - data/wine_featurized.csv
+  split_dataset:
+    cmd: python src/split_dataset.py --config=params.yaml
+    deps:
+    - data/wine_featurized.csv
+    - src/split_dataset.py
+    params:
+    - data_split
+    - featurize
+    outs:
+    - data/test.csv
+    - data/train.csv
+  train:
+    cmd: python src/train.py --config=params.yaml
+    deps:
+    - data/train.csv
+    - src/train.py
+    params:
+    - data_split
+    - train
+    outs:
+    - data/model.joblib
+  evaluate:
+    cmd: python src/evaluate.py --config=params.yaml
+    deps:
+    - data/classes.json
+    - data/model.joblib
+    - data/test.csv
+    - src/evaluate.py
+    params:
+    - data_load
+    - data_split
+    - evaluate
+    - train
+    metrics:
+    - data/metrics.json
+    plots:
+    - data/cm.csv
